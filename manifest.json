@@ -2,7 +2,7 @@
   "version": 1,
   "locale": "en_US",
   "platform": "shiny",
-  "r_version": "4.3.1",
+  "r_version": "4.0.0",
   "metadata": {
     "appmode": "shiny",
     "primary_document": "app.R"
