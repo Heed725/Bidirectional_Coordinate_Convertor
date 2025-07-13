@@ -3,8 +3,16 @@
   "locale": "en_US",
   "platform": "shiny",
   "r_version": "4.3.1",
+  "engines": {
+    "R": "4.3.1"
+  },
   "metadata": {
     "appmode": "shiny",
     "primary_document": "app.R"
+  },
+  "packages": {
+    "shiny": {},
+    "shinythemes": {},
+    "tidyverse": {}
   }
 }
