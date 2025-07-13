@@ -1,8 +1,12 @@
+# Load libraries
 library(shiny)
 library(tidyverse)
 library(shinythemes)
+library(jsonlite)
 
-# Convert DMS to Decimal
+# ============ Helper Functions ============
+
+# Convert DMS to Decimal Degrees
 dms_to_decimal <- function(dms_string) {
   parts <- str_match(dms_string, "(\\d+)[°](\\d+)['](\\d+)[\"]\\s*([NSEW])")
   degrees <- as.numeric(parts[,2])
@@ -14,7 +18,7 @@ dms_to_decimal <- function(dms_string) {
   return(decimal)
 }
 
-# Convert Decimal to DMS
+# Convert Decimal Degrees to DMS
 decimal_to_dms <- function(decimal, is_lat = TRUE) {
   dir <- if (is_lat) ifelse(decimal < 0, "S", "N") else ifelse(decimal < 0, "W", "E")
   decimal <- abs(decimal)
@@ -23,6 +27,8 @@ decimal_to_dms <- function(decimal, is_lat = TRUE) {
   s <- round((((decimal - d) * 60 - m) * 60), 0)
   sprintf("%d°%d'%d\" %s", d, m, s, dir)
 }
+
+# ============ UI ============
 
 ui <- fluidPage(
   theme = shinytheme("cerulean"),
@@ -47,7 +53,9 @@ ui <- fluidPage(
   )
 )
 
-server <- function(input, output) {
+# ============ Server ============
+
+server <- function(input, output, session) {
   data <- reactive({
     req(input$file1)
     df <- read.csv(input$file1$datapath)
@@ -75,4 +83,34 @@ server <- function(input, output) {
   )
 }
 
+# ============ Manifest Writer (optional) ============
+
+write_manifest <- function() {
+  manifest <- list(
+    version = 1,
+    locale = "en",
+    platform = "R",
+    metadata = list(
+      appmode = "shiny",
+      primary_document = "app.R"
+    ),
+    packages = list(
+      list(name = "shiny", version = "1.5.0"),
+      list(name = "tidyverse", version = "1.3.0"),
+      list(name = "shinythemes", version = "1.1.2"),
+      list(name = "rsconnect", version = "0.8.16")
+    ),
+    r_version = "4.0.0"
+  )
+
+  write_json(manifest, "manifest.json", auto_unbox = TRUE, pretty = TRUE)
+  message("✅ manifest.json written successfully.")
+}
+
+# Write manifest only if running interactively (to avoid it running on shinyapps.io)
+if (interactive()) {
+  write_manifest()
+}
+
+# ============ Run App ============
 shinyApp(ui = ui, server = server)
