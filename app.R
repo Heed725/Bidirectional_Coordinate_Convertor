@@ -1,36 +1,10 @@
-# ------------------------------------------
-# 1. Load required libraries
-# ------------------------------------------
-library(shiny)
-library(tidyverse)
-library(shinythemes)
-library(rsconnect)
-
-# ------------------------------------------
-# 2. Set rsconnect options to limit bundle size (optional)
-# ------------------------------------------
-options(rsconnect.max.bundle.size = 1000000000)  # 1 GB bundle max (optional but safe)
-
-# ------------------------------------------
-# 3. Set working directory to a clean app folder
-# Replace with your actual path if needed
-# ------------------------------------------
-app_folder <- "DMSApp"
-
-# Create folder if it doesn't exist
-if (!dir.exists(app_folder)) {
-  dir.create(app_folder)
-}
-
-# Save the app file into the clean folder
-app_code <- '
 library(shiny)
 library(tidyverse)
 library(shinythemes)
 
 # Convert DMS to Decimal
 dms_to_decimal <- function(dms_string) {
-  parts <- str_match(dms_string, "(\\\\d+)[°](\\\\d+)[\\\'](\\\\d+)[\\"]\\\\s*([NSEW])")
+  parts <- str_match(dms_string, "(\\d+)[°](\\d+)['](\\d+)[\"]\\s*([NSEW])")
   degrees <- as.numeric(parts[,2])
   minutes <- as.numeric(parts[,3])
   seconds <- as.numeric(parts[,4])
@@ -47,7 +21,7 @@ decimal_to_dms <- function(decimal, is_lat = TRUE) {
   d <- floor(decimal)
   m <- floor((decimal - d) * 60)
   s <- round((((decimal - d) * 60 - m) * 60), 0)
-  sprintf("%d°%d\'%d\\" %s", d, m, s, dir)
+  sprintf("%d°%d'%d\" %s", d, m, s, dir)
 }
 
 ui <- fluidPage(
@@ -59,8 +33,8 @@ ui <- fluidPage(
       tags$hr(),
       helpText("Upload a file with either:"),
       tags$ul(
-        tags$li("\'Lat\' and \'Long\' in DMS format (e.g. 6°49\'12\" S)"),
-        tags$li("\'Deci_Lat\' and \'Deci_Long\' in decimal degrees")
+        tags$li("'Lat' and 'Long' in DMS format (e.g. 6°49'12\" S)"),
+        tags$li("'Deci_Lat' and 'Deci_Long' in decimal degrees")
       ),
       downloadButton("downloadData", "⬇️ Download Converted CSV"),
       br(), br(),
@@ -84,13 +58,13 @@ server <- function(input, output) {
       df$Lat <- sapply(df$Deci_Lat, function(x) decimal_to_dms(x, is_lat = TRUE))
       df$Long <- sapply(df$Deci_Long, function(x) decimal_to_dms(x, is_lat = FALSE))
     } else {
-      stop("CSV must contain either \'Lat\'/\'Long\' or \'Deci_Lat\'/\'Deci_Long\'.")
+      stop("CSV must contain either 'Lat'/'Long' or 'Deci_Lat'/'Deci_Long'.")
     }
     return(df)
   })
-  
+
   output$contents <- renderTable({ data() })
-  
+
   output$downloadData <- downloadHandler(
     filename = function() {
       paste0("converted_coordinates_", Sys.Date(), ".csv")
@@ -102,20 +76,3 @@ server <- function(input, output) {
 }
 
 shinyApp(ui = ui, server = server)
-'
-
-# ------------------------------------------
-# 4. Write app to file in clean folder
-# ------------------------------------------
-writeLines(app_code, file.path(app_folder, "app.R"))
-
-# ------------------------------------------
-# 5. Set working directory to app folder
-# ------------------------------------------
-setwd(app_folder)
-
-# ------------------------------------------
-# 6. Deploy the app
-# ------------------------------------------
-rsconnect::deployApp()
-
