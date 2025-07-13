@@ -1,1 +1,1 @@
-# Bidirectionnal_Coordinate_Convertor
+# Bidirectional_Coordinate_Convertor
