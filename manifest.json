@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "locale": "en_US",
+  "platform": "shiny",
+  "metadata": {
+    "appmode": "shiny",
+    "primary_document": "app.R"
+  }
+}
