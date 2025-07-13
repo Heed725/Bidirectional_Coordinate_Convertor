@@ -43,6 +43,6 @@ install.packages(c("shiny", "tidyverse", "shinythemes"))
 
 ```
 
-Press this link to go to the website:
+[Open the app on Posit Connect](https://connect.posit.cloud/hemedlungo/content/01980590-072b-9fdc-2627-61d99f4caa85)
 
 full credit:Bwana Muki
