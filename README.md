@@ -45,5 +45,5 @@ install.packages(c("shiny", "tidyverse", "shinythemes"))
 
 [Open the app on Posit Connect](https://connect.posit.cloud/hemedlungo/content/01980590-072b-9fdc-2627-61d99f4caa85)
 
-full credit: Thanks to [@bwanamuki](https://github.com/bwanamuki) for the contributions.
+Full credit: Special Thanks to [@bwanamuki](https://github.com/bwanamuki) cause this work is based on his R script
 
