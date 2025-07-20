@@ -42,7 +42,7 @@ ui <- fluidPage(
       ),
       downloadButton("downloadData", "⬇️ Download Converted CSV"),
       br(), br(),
-      tags$small("Built with ❤️ by Hemed Lungo")
+      tags$small("Built with ❤️ by Hemed Lungo, credit to BwanaMuki")
     ),
     
     mainPanel(
@@ -54,35 +54,37 @@ ui <- fluidPage(
 
 # ---------- Server ----------
 server <- function(input, output) {
-  data <- reactive({
+  
+  converted_data <- reactive({
     req(input$file1)
-    df <- read.csv(input$file1$datapath)
+    df <- read_csv(input$file1$datapath, show_col_types = FALSE)
     
-    # Determine which conversion is needed
-    if (all(c("Lat", "Long") %in% names(df))) {
+    if ("Lat" %in% names(df) && "Long" %in% names(df)) {
       df$Deci_Lat <- sapply(df$Lat, dms_to_decimal)
       df$Deci_Long <- sapply(df$Long, dms_to_decimal)
-    } else if (all(c("Deci_Lat", "Deci_Long") %in% names(df))) {
-      df$Lat <- sapply(df$Deci_Lat, function(x) decimal_to_dms(x, is_lat = TRUE))
-      df$Long <- sapply(df$Deci_Long, function(x) decimal_to_dms(x, is_lat = FALSE))
+    } else if ("Deci_Lat" %in% names(df) && "Deci_Long" %in% names(df)) {
+      df$Lat <- sapply(df$Deci_Lat, decimal_to_dms, is_lat = TRUE)
+      df$Long <- sapply(df$Deci_Long, decimal_to_dms, is_lat = FALSE)
     } else {
-      stop("CSV must contain either 'Lat' and 'Long' (DMS), or 'Deci_Lat' and 'Deci_Long' (decimal degrees)")
+      df <- tibble(Error = "Invalid column names. Use 'Lat'/'Long' or 'Deci_Lat'/'Deci_Long'.")
     }
-    return(df)
+    
+    df
   })
   
-  output$contents <- renderTable({ data() })
+  output$contents <- renderTable({
+    converted_data()
+  })
   
   output$downloadData <- downloadHandler(
     filename = function() {
       paste0("converted_coordinates_", Sys.Date(), ".csv")
     },
     content = function(file) {
-      write.csv(data(), file, row.names = FALSE)
+      write_csv(converted_data(), file)
     }
   )
 }
 
 # ---------- Run App ----------
 shinyApp(ui = ui, server = server)
-
